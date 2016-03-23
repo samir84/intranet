@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:security="http://www.springframework.org/schema/security"
+	xsi:schemaLocation="http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-4.0.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+
+	<security:http auto-config="true" use-expressions="true">
+		<security:intercept-url pattern="/" access="permitAll" />
+		<security:intercept-url pattern="/admin**"
+			access="hasRole('ROLE_ADMIN')" />
+		<security:intercept-url pattern="/profile**"
+			access="hasRole('ROLE_USER')" />
+
+		<security:form-login login-page="/login"
+			login-processing-url="/j_spring_security_check" default-target-url="/home"
+			always-use-default-target="true" authentication-failure-url="/login?login_error=1"
+			username-parameter="j_username" password-parameter="j_password" />
+		<security:csrf disabled="true" />
+	</security:http>
+	<security:authentication-manager>
+		<security:authentication-provider>
+
+			<security:password-encoder hash="bcrypt" />
+
+			<security:jdbc-user-service data-source-ref="dataSource"
+				authorities-by-username-query="select app_user.name, role.name from app_user
+											   join app_user_role on app_user.id = app_user_role.users_id
+											   join role on app_user_role.roles_id = role.id
+											   where app_user.name = ?"
+				users-by-username-query="select name,password,enabled from app_user where name = ?" />
+
+		</security:authentication-provider>
+	</security:authentication-manager>
+
+	<bean id="PasswordEncoder"
+		class="org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder" />
+	<!-- JavaMailSender -->
+	<bean id="JavaMailSender" class="org.springframework.mail.javamail.JavaMailSenderImpl">
+		<property name="host">
+			<value>smtp.gmail.com</value>
+		</property>
+		<property name="port">
+			<value>465</value>
+		</property>
+		<property name="protocol">
+			<value>smtp</value>
+		</property>
+		<property name="username">
+			<value>elazzouzi.s@gmail.com</value>
+		</property>
+		<property name="password">
+			<value>Tsocsept20</value>
+		</property>
+		<property name="javaMailProperties">
+			<props>
+				<prop key="mail.smtp.auth">true</prop>
+				<prop key="mail.smtp.starttls.enable">false</prop>
+				<prop key="mail.smtp.quitwait">false</prop>
+				<prop key="mail.smtp.socketFactory.class">javax.net.ssl.SSLSocketFactory</prop>
+				<prop key="mail.smtp.socketFactory.fallback">false</prop>
+				<prop key="mail.debug">true</prop>
+			</props>
+		</property>
+	</bean>
+</beans>
